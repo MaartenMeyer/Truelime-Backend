@@ -12,5 +12,10 @@ namespace TruelimeBackend.Models
         [BsonElement("Title")]
         public string Title { get; set; }
 
+        [BsonElement("Content")]
+        public string Content { get; set; }
+
+        [BsonElement("Position")]
+        public string Position { get; set; }
     }
 }

@@ -75,7 +75,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"title\": \"Teeeeest\"\n}",
+					"raw": "{\n\t\"title\": \"Review sprint 1\",\n\t\"content\": \"We hebben echt geen ene zak gedaan deze week!\",\n\t\"position\": \"1\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -132,7 +132,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"id\": \"5dee592e7fa9f37a443a55f5\",\n\t\"title\": \"Updated\"\n}",
+					"raw": "{\n\t\"id\": \"5dee592e7fa9f37a443a55f5\",\n\t\"title\": \"Updated\",\n\t\"content\": \"Wat een mooie retrospective!\",\n\t\"position\": \"3\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
