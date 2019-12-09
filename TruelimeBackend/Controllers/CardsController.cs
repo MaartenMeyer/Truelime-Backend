@@ -22,7 +22,7 @@ namespace TruelimeBackend.Controllers {
         public ActionResult<List<Card>> Get() =>
             cardService.Get();
 
-        [HttpGet("{id:length(24)}", Name = "GetBook")]
+        [HttpGet("{id:length(24)}", Name = "GetCard")]
         public ActionResult<Card> Get(string id)
         {
             var card = cardService.Get(id);
@@ -54,7 +54,7 @@ namespace TruelimeBackend.Controllers {
             return NoContent();
         }
 
-        [HttpPut("{id:length(24)}")]
+        [HttpDelete("{id:length(24)}")]
         public ActionResult Delete(string id) {
             var card = cardService.Get(id);
             if (card == null) {
