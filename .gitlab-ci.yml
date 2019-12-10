@@ -1,0 +1,50 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay
+  CONTAINER_GITLAB: registry.gitlab.com/bk93/project-truelime-backend
+  CONTAINER_TAG: latest
+  CONTAINER_HEROKU: registry.heroku.com/api-truelime/web
+  HEROKU_API_KEY: $HEROKU_API_KEY
+  HEROKU_USER: $HEROKU_USER
+
+# Order of tasks
+stages:
+  - dockerize
+  - deploy
+
+# Register in your gitlab registry. The environment variables are set automatically, don't change anything.
+before_script:
+  - docker login -u gitlab-ci-token -p "$CI_BUILD_TOKEN" "$CI_REGISTRY"
+
+dockerize:
+  stage: dockerize
+  script:
+    # Make an image from the current folder and tag it with the registry name and tag you defined
+    - docker build -t $CONTAINER_GITLAB:$CONTAINER_TAG .
+    # Push to Gitlab
+    - docker push $CONTAINER_GITLAB:$CONTAINER_TAG
+  only:
+    - master
+
+build:
+  stage: deploy
+  environment:
+    name: staging
+    url: https://api-truelime.herokuapp.com/
+  services:
+  - docker:dind
+  script:
+    # Login to Heroku's registry
+    - docker login --username=$HEROKU_USER --password=$HEROKU_API_KEY registry.heroku.com
+    # Gets your Gitlab image
+    - docker pull $CONTAINER_GITLAB:$CONTAINER_TAG
+    # Make it good looking for Heroku
+    - docker tag $CONTAINER_GITLAB:$CONTAINER_TAG $CONTAINER_HEROKU
+    # Push it to Heroku
+    - docker push $CONTAINER_HEROKU
+  only:
+    - master
