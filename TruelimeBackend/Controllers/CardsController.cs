@@ -28,7 +28,7 @@ namespace TruelimeBackend.Controllers {
             var card = cardService.Get(id);
             if (card == null)
             {
-                return NotFound();
+                return NoContent();
             }
 
             return card;
@@ -45,8 +45,9 @@ namespace TruelimeBackend.Controllers {
         [HttpPut("{id:length(24)}")]
         public ActionResult Update(string id, Card cardIn) {
             var card = cardService.Get(id);
-            if (card == null) {
-                return NotFound();
+            if (card == null)
+            {
+                return NoContent();
             }
 
             cardService.Update(id, cardIn);
@@ -57,8 +58,9 @@ namespace TruelimeBackend.Controllers {
         [HttpDelete("{id:length(24)}")]
         public ActionResult Delete(string id) {
             var card = cardService.Get(id);
-            if (card == null) {
-                return NotFound();
+            if (card == null)
+            {
+                return NoContent();
             }
 
             cardService.Remove(card.Id);

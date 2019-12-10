@@ -8,7 +8,7 @@ namespace TruelimeBackend.Services
     {
         private readonly IMongoCollection<Card> cards;
 
-        public CardService(CardsDatabaseSettings.ICardsDatabaseSettings settings) {
+        public CardService(DatabaseSettings.IDatabaseSettings settings) {
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
 

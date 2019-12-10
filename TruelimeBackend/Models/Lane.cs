@@ -1,9 +1,11 @@
-﻿using MongoDB.Bson;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace TruelimeBackend.Models
 {
-    public class Card
+    public class Lane
     {
         [BsonId]
         [BsonRepresentation((BsonType.ObjectId))]
@@ -12,10 +14,6 @@ namespace TruelimeBackend.Models
         [BsonElement("Title")]
         public string Title { get; set; }
 
-        [BsonElement("Message")]
-        public string Message { get; set; }
-
-        [BsonElement("Author")]
-        public string Author { get; set; }
+        public List<Card> Cards { get; set; }
     }
 }

@@ -24,12 +24,14 @@ namespace TruelimeBackend {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CardsDatabaseSettings>(
-                Configuration.GetSection(nameof(CardsDatabaseSettings)));
-            services.AddSingleton<CardsDatabaseSettings.ICardsDatabaseSettings>(sp =>
-                sp.GetRequiredService<IOptions<CardsDatabaseSettings>>().Value);
+            services.Configure<DatabaseSettings>(
+                Configuration.GetSection(nameof(DatabaseSettings)));
+            services.AddSingleton<DatabaseSettings.IDatabaseSettings>(sp =>
+                sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
+            services.AddSingleton<BoardService>();
+            services.AddSingleton<LaneService>();
             services.AddSingleton<CardService>();
-            
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
