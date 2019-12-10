@@ -15,7 +15,7 @@ before_script:
 deploy:
   stage: deploy
   script:
-    - docker run -t -v $PWD:/truelime-api --workdir ./TruelimeBackend mcr.microsoft.com/dotnet/core/sdk:2.2 bash -c "dotnet restore && dotnet publish -c Release -o ./bin/Release/PublishOutput"
+    - docker run -t -v $PWD:/truelime-api --workdir /truelime-api/TruelimeBackend mcr.microsoft.com/dotnet/core/sdk:2.2 bash -c "dotnet restore && dotnet publish -c Release -o ./bin/Release/PublishOutput"
     - docker build -t registry.heroku.com/api-truelime/web .
     - docker push registry.heroku.com/api-truelime/web
     - heroku container:release web --app api-truelime
