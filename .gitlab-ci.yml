@@ -24,7 +24,7 @@ dockerize:
   stage: dockerize
   script:
     # Make an image from the current folder and tag it with the registry name and tag you defined
-    - docker build -t $CONTAINER_GITLAB:$CONTAINER_TAG .
+    - docker build -t $CONTAINER_GITLAB:$CONTAINER_TAG
     # Push to Gitlab
     - docker push $CONTAINER_GITLAB:$CONTAINER_TAG
   only:
