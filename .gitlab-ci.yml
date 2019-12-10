@@ -7,11 +7,11 @@ variables:
   DOCKER_DRIVER: overlay
 
 before_script:
-  - docker login -u "$HEROKU_USER" -p "$HEROKU_PASSWORD" registry.heroku.com
+  - docker login -u "$HEROKU_USER" -p "$HEROKU_API_KEY" registry.heroku.com
   - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community nodejs-npm
   - npm i -g heroku
 
-deploy-develop:
+deploy:
   stage: deploy
   script:
     - docker run -t -v $PWD:/TruelimeBackend --workdir /TruelimeBackend mcr.microsoft.com/dotnet/core/sdk:2.2 bash -c "dotnet restore && dotnet publish -c Release -o ./bin/Release/PublishOutput"
