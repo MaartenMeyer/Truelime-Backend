@@ -142,12 +142,10 @@ namespace TruelimeBackend.Controllers
             }
 
             var card = await cardService.Create(cardIn);
-            lane.Cards.Add(card);
-            laneService.Update(lane.Id, lane);
-            board.Lanes[index] = lane;
-            boardService.Update(board.Id, board);
+            var updatedLane = await laneService.AddCard(lane.Id, card);
+            await boardService.UpdateLane(board.Id, updatedLane);
 
-            return CreatedAtRoute("GetBoard", new { id = board.Id }, board);
+            return Ok("Card added");
         }
 
         /// <summary>

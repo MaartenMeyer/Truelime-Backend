@@ -37,5 +37,20 @@ namespace TruelimeBackend.Services
         public void Remove(string id) =>
             lanes.DeleteOne(lane => lane.Id == id);
 
+        public async Task<Lane> AddCard(string id, Card cardIn) {
+            var filter = Builders<Lane>.Filter.Eq(lane => lane.Id, id);
+            var update = Builders<Lane>.Update.Push(lane => lane.Cards, cardIn);
+
+            await lanes.FindOneAndUpdateAsync(filter, update);
+
+            return lanes.Find<Lane>(lane => lane.Id == id).FirstOrDefault();
+        }
+
+        public async Task RemoveCard(string id, Card cardIn) {
+            var filter = Builders<Lane>.Filter.Eq(card => card.Id, id);
+            var update = Builders<Lane>.Update.PullFilter("Cards", Builders<Card>.Filter.Eq(card => card.Id, cardIn.Id));
+
+            await lanes.FindOneAndUpdateAsync(filter, update);
+        }
     }
 }
