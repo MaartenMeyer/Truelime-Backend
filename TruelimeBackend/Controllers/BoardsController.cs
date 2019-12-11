@@ -39,11 +39,29 @@ namespace TruelimeBackend.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Board> Create(Board board)
+        public ActionResult<Board> CreateBoard(Board board)
         {
             boardService.Create(board);
 
             return CreatedAtRoute("GetBoard", new { id = board.Id.ToString() }, board);
+        }
+
+        [HttpDelete("{boardId:length(24)}", Name = "DeleteBoard")]
+        public ActionResult DeleteBoard(string boardId) {
+            var board = boardService.Get(boardId);
+            if (board == null) {
+                return NoContent();
+            }
+            foreach(Lane lane in board.Lanes) {
+                foreach (Card card in lane.Cards) {
+                    cardService.Remove(card);
+                }
+                laneService.Remove(lane);
+            }
+
+            boardService.Remove(board.Id);
+
+            return Ok();
         }
 
         /// <summary>
@@ -62,10 +80,9 @@ namespace TruelimeBackend.Controllers
             }
 
             var lane = await laneService.Create(laneIn);
-            board.Lanes.Add(lane);
-            boardService.Update(board.Id, board);
+            await boardService.AddLane(board.Id, lane);
 
-            return CreatedAtRoute("GetBoard", new { id = board.Id }, board);
+            return Ok("Lane added");
         }
 
         /// <summary>
@@ -76,7 +93,7 @@ namespace TruelimeBackend.Controllers
         /// <param name="laneId"></param>
         /// <returns>Returns 200 if deleted or 204 if an id was not found</returns>
         [HttpDelete("{boardId:length(24)}/lanes/{laneId:length(24)}", Name = "DeleteLane")]
-        public ActionResult DeleteLane(string boardId, string laneId) {
+        public async Task<ActionResult> DeleteLane(string boardId, string laneId) {
             var board = boardService.Get(boardId);
             if (board == null) {
                 return NoContent();
@@ -90,9 +107,12 @@ namespace TruelimeBackend.Controllers
             {
                 return NoContent();
             }
+            foreach(Card card in lane.Cards)
+            {
+                cardService.Remove(card);
+            }
 
-            board.Lanes.RemoveAt(index);
-            boardService.Update(board.Id, board);
+            await boardService.RemoveLane(board.Id, lane);
 
             laneService.Remove(lane.Id);
 
