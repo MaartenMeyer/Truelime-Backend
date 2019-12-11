@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using MongoDB.Driver;
 using TruelimeBackend.Models;
 
@@ -15,10 +16,10 @@ namespace TruelimeBackend.Services
             cards = database.GetCollection<Card>(settings.CardsCollectionName);
         }
 
-        public Card Create(Card card)
+        public async Task<Card> Create(Card cardIn)
         {
-            cards.InsertOne(card);
-            return card;
+            await cards.InsertOneAsync(cardIn);
+            return cardIn;
         }
 
         public List<Card> Get() =>
