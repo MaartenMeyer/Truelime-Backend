@@ -123,6 +123,7 @@ namespace TruelimeBackend.Controllers
 
             var card = await cardService.Create(cardIn);
             lane.Cards.Add(card);
+            laneService.Update(lane.Id, lane);
             board.Lanes[index] = lane;
             boardService.Update(board.Id, board);
 
