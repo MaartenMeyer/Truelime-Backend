@@ -129,5 +129,46 @@ namespace TruelimeBackend.Controllers
 
             return CreatedAtRoute("GetBoard", new { id = board.Id }, board);
         }
+
+        /// <summary>
+        /// Find and deletes the card with id of param cardId
+        /// Removes the card from the lane with id of param laneId
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <param name="laneId"></param>
+        /// /// <param name="cardId"></param>
+        /// <returns>Returns 200 if deleted or 204 if an id was not found</returns>
+        [HttpDelete("{boardId:length(24)}/lanes/{laneId:length(24)}/cards/{cardId:length(24)}", Name = "DeleteCard")]
+        public ActionResult DeleteCard(string boardId, string laneId, string cardId) {
+            var board = boardService.Get(boardId);
+            if (board == null) {
+                return NoContent();
+            }
+            var lane = laneService.Get(laneId);
+            if (lane == null) {
+                return NoContent();
+            }
+            var card = cardService.Get(cardId);
+            if (card == null) {
+                return NoContent();
+            }
+            var laneIndex = board.Lanes.FindIndex(l => l.Id == lane.Id);
+            if (laneIndex < 0) {
+                return NoContent();
+            }
+            var cardIndex = lane.Cards.FindIndex(c => c.Id == card.Id);
+            if (cardIndex < 0) {
+                return NoContent();
+            }
+
+            lane.Cards.RemoveAt(cardIndex);
+            laneService.Update(lane.Id, lane);
+            board.Lanes[laneIndex] = lane;
+            boardService.Update(board.Id, board);
+
+            cardService.Remove(card.Id);
+
+            return Ok();
+        }
     }
 }
