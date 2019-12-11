@@ -98,5 +98,35 @@ namespace TruelimeBackend.Controllers
 
             return Ok();
         }
+
+        /// <summary>
+        /// Creates a new card and adds it to the lane with id of param laneId
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <param name="laneId"></param>
+        /// <param name="cardIn"></param>
+        /// <returns>Returns the board this card was added to</returns>
+        [HttpPost("{boardId:length(24)}/lanes/{laneId:length(24)}/cards", Name = "PostCard")]
+        public async Task<ActionResult<Board>> CreateCard(string boardId, string laneId, Card cardIn) {
+            var board = boardService.Get(boardId);
+            if (board == null) {
+                return NoContent();
+            }
+            var lane = laneService.Get(laneId);
+            if (lane == null) {
+                return NoContent();
+            }
+            var index = board.Lanes.FindIndex(l => l.Id == lane.Id);
+            if (index < 0) {
+                return NoContent();
+            }
+
+            var card = await cardService.Create(cardIn);
+            lane.Cards.Add(card);
+            board.Lanes[index] = lane;
+            boardService.Update(board.Id, board);
+
+            return CreatedAtRoute("GetBoard", new { id = board.Id }, board);
+        }
     }
 }
