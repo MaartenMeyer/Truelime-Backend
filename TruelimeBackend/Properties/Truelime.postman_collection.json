@@ -6,157 +6,355 @@
 	},
 	"item": [
 		{
-			"name": "Get all cards",
-			"event": [
+			"name": "Boards",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "cba03caf-92a6-47ff-b6e2-de0419b642e4",
-						"exec": [
-							"var data = pm.response.json();\r",
-							"if(data.length !== 0){\r",
-							"    pm.environment.set(\"id\", data[data.length - 1].id);\r",
-							"}"
+					"name": "Create new board",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
 						],
-						"type": "text/javascript"
-					}
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Retrospective week 1\",\n\t\"description\": \"Niet te laat komen!\",\n\t\"owner\": \"Maarten\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}api/boards",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"boards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all boards",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "266963be-43d5-418a-b828-9a3b6e05a0d0",
+								"exec": [
+									"var data = pm.response.json();\r",
+									"if(data.length !== 0){\r",
+									"    var firstBoard = data[data.length - 1];\r",
+									"    pm.environment.set(\"boardId\", firstBoard.id);\r",
+									"    if(firstBoard.lanes.length !== 0){\r",
+									"        pm.environment.set(\"laneId\", firstBoard.lanes[firstBoard.lanes.length - 1].id);\r",
+									"    }\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}api/boards",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"boards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get board by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}api/boards/{{boardId}}",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"boards",
+								"{{boardId}}"
+							]
+						}
+					},
+					"response": []
 				}
 			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{url}}api/cards",
-					"host": [
-						"{{url}}api"
-					],
-					"path": [
-						"cards"
-					]
-				}
-			},
-			"response": []
+			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "Get card by id",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{url}}api/cards/:id",
-					"host": [
-						"{{url}}api"
-					],
-					"path": [
-						"cards",
-						":id"
-					],
-					"variable": [
+			"name": "Lanes",
+			"item": [
+				{
+					"name": "Add lane to board",
+					"event": [
 						{
-							"key": "id",
-							"value": "{{id}}"
+							"listen": "test",
+							"script": {
+								"id": "8ffa8018-b4c0-4ec7-a5d8-bb8b998774a1",
+								"exec": [
+									"var data = pm.response.json();\r",
+									"if(data.lanes.length !== 0){\r",
+									"    pm.environment.set(\"laneId\", data.lanes[data.lanes.length - 1].id);\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
 						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Post card",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"title\": \"Review sprint 1\",\n\t\"content\": \"We hebben echt geen ene zak gedaan deze week!\",\n\t\"position\": \"1\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Wat kan beter?\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}api/boards/:boardId/lanes",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"boards",
+								":boardId",
+								"lanes"
+							],
+							"variable": [
+								{
+									"key": "boardId",
+									"value": "{{boardId}}"
+								}
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{url}}api/cards",
-					"host": [
-						"{{url}}api"
-					],
-					"path": [
-						"cards"
-					]
+				{
+					"name": "Remove lane from board",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}api/boards/:boardId/lanes/:laneId",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"boards",
+								":boardId",
+								"lanes",
+								":laneId"
+							],
+							"variable": [
+								{
+									"key": "boardId",
+									"value": "{{boardId}}"
+								},
+								{
+									"key": "laneId",
+									"value": "{{laneId}}"
+								}
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			],
+			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "Delete card by id",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{url}}api/cards/:id",
-					"host": [
-						"{{url}}api"
-					],
-					"path": [
-						"cards",
-						":id"
-					],
-					"variable": [
-						{
-							"key": "id",
-							"value": "{{id}}"
+			"name": "Cards",
+			"item": [
+				{
+					"name": "Add card to lane",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Review sprint 1\",\n\t\"content\": \"Helemaal mooi!\",\n\t\"position\": \"1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}api/cards",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"cards"
+							]
 						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update card by id",
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"id\": \"5dee592e7fa9f37a443a55f5\",\n\t\"title\": \"Updated\",\n\t\"content\": \"Wat een mooie retrospective!\",\n\t\"position\": \"3\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{url}}api/cards/:id",
-					"host": [
-						"{{url}}api"
-					],
-					"path": [
-						"cards",
-						":id"
-					],
-					"variable": [
+				{
+					"name": "Get all cards",
+					"event": [
 						{
-							"key": "id",
-							"value": "{{id}}"
+							"listen": "test",
+							"script": {
+								"id": "cba03caf-92a6-47ff-b6e2-de0419b642e4",
+								"exec": [
+									"var data = pm.response.json();\r",
+									"if(data.length !== 0){\r",
+									"    pm.environment.set(\"cardId\", data[data.length - 1].id);\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
 						}
-					]
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}api/cards",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"cards"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get card by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}api/cards/:id",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"cards",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{cardId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete card by id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}api/cards/:id",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"cards",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{cardId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update card by id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"id\": \"5dee592e7fa9f37a443a55f5\",\n\t\"title\": \"Updated\",\n\t\"content\": \"Wat een mooie retrospective!\",\n\t\"position\": \"3\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}api/cards/:id",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"cards",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{cardId}}"
+								}
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			],
+			"protocolProfileBehavior": {}
 		}
 	],
 	"protocolProfileBehavior": {}
