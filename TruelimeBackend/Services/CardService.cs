@@ -28,11 +28,16 @@ namespace TruelimeBackend.Services
         public Card Get(string id) =>
             cards.Find<Card>(card => card.Id == id).FirstOrDefault();
 
-        public void Update(string id, Card cardIn) =>
-            cards.ReplaceOne(card => card.Id == id, cardIn);
+        public async Task<Card> Update(string id, Card cardIn) {
+            var filter = Builders<Card>.Filter.Eq(card => card.Id, id);
+            var update = Builders<Card>.Update
+                .Set("Title", cardIn.Title)
+                .Set("Message", cardIn.Message);
 
-        public void Remove(Card cardIn) =>
-            cards.DeleteOne(card => card.Id == cardIn.Id);
+            await cards.FindOneAndUpdateAsync(filter, update);
+
+            return cards.Find<Card>(card => card.Id == id).FirstOrDefault();
+        }
 
         public void Remove(string id) =>
             cards.DeleteOne(card => card.Id == id);

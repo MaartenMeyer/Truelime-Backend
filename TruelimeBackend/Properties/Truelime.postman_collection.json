@@ -22,7 +22,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Retrospective week 1\",\n\t\"description\": \"Niet te laat komen!\",\n\t\"owner\": \"Maarten\"\n}",
+							"raw": "{\n\t\"title\": \"Board\",\n\t\"description\": \"Test new board\",\n\t\"owner\": \"test\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -83,13 +83,83 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{url}}api/boards/{{boardId}}",
+							"raw": "{{url}}api/boards/:boardId",
 							"host": [
 								"{{url}}api"
 							],
 							"path": [
 								"boards",
-								"{{boardId}}"
+								":boardId"
+							],
+							"variable": [
+								{
+									"key": "boardId",
+									"value": "5df1ffcee1370e2a64e9f106"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update board by id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Retrospective week 1\",\n\t\"description\": \"Retrospective van project Truelime\",\n\t\"owner\": \"Maarten\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}api/boards/:boardId",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"boards",
+								":boardId"
+							],
+							"variable": [
+								{
+									"key": "boardId",
+									"value": "5df1ffcee1370e2a64e9f106"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete board by id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}api/boards/:boardId",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"boards",
+								":boardId"
+							],
+							"variable": [
+								{
+									"key": "boardId",
+									"value": "5df24dcecb40c74524c0b345"
+								}
 							]
 						}
 					},
@@ -109,10 +179,7 @@
 							"script": {
 								"id": "8ffa8018-b4c0-4ec7-a5d8-bb8b998774a1",
 								"exec": [
-									"var data = pm.response.json();\r",
-									"if(data.lanes.length !== 0){\r",
-									"    pm.environment.set(\"laneId\", data.lanes[data.lanes.length - 1].id);\r",
-									"}"
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -130,7 +197,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Wat kan nog beter?\"\n}",
+							"raw": "{\n\t\"title\": \"Lane\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -150,7 +217,53 @@
 							"variable": [
 								{
 									"key": "boardId",
-									"value": "{{boardId}}"
+									"value": "5df1ffcee1370e2a64e9f106"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update lane by id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Wat ging goed?\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}api/boards/:boardId/lanes/:laneId",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"boards",
+								":boardId",
+								"lanes",
+								":laneId"
+							],
+							"variable": [
+								{
+									"key": "boardId",
+									"value": "5df1ffcee1370e2a64e9f106"
+								},
+								{
+									"key": "laneId",
+									"value": "5df20005e1370e2a64e9f107"
 								}
 							]
 						}
@@ -183,11 +296,11 @@
 							"variable": [
 								{
 									"key": "boardId",
-									"value": ""
+									"value": "5df1ffcee1370e2a64e9f106"
 								},
 								{
 									"key": "laneId",
-									"value": "{{laneId}}"
+									"value": "5df2533b3b263d2a640a9402"
 								}
 							]
 						}
@@ -214,7 +327,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"title\": \"Mick bullshit\",\n\t\"content\": \"Helemaal mooi!\",\n\t\"position\": \"1\"\n}",
+							"raw": "{\n\t\"title\": \"Card\",\n\t\"message\": \"New card\",\n\t\"position\": \"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -236,11 +349,63 @@
 							"variable": [
 								{
 									"key": "boardId",
-									"value": "{{boardId}}"
+									"value": "5df1ffcee1370e2a64e9f106"
 								},
 								{
 									"key": "laneId",
-									"value": "{{laneId}}"
+									"value": "5df20af1e1370e2a64e9f10f"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update card by id",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"title\": \"Werktijden\",\n\t\"message\": \"Minder vaak vroeg naar huis - update (oeps de verkeerde geupdate)\",\n\t\"position\": \"1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}api/boards/:boardId/lanes/:laneId/cards/:cardId",
+							"host": [
+								"{{url}}api"
+							],
+							"path": [
+								"boards",
+								":boardId",
+								"lanes",
+								":laneId",
+								"cards",
+								":cardId"
+							],
+							"variable": [
+								{
+									"key": "boardId",
+									"value": "5df1ffcee1370e2a64e9f106"
+								},
+								{
+									"key": "laneId",
+									"value": "5df20005e1370e2a64e9f107"
+								},
+								{
+									"key": "cardId",
+									"value": "5df20f6be1370e2a64e9f110"
 								}
 							]
 						}
@@ -276,7 +441,7 @@
 								},
 								{
 									"key": "cardId",
-									"value": "5df0ecee38cdd56f28b99af8"
+									"value": "5df20544e1370e2a64e9f10c"
 								}
 							]
 						}

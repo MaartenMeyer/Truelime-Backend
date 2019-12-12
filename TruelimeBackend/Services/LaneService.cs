@@ -28,11 +28,15 @@ namespace TruelimeBackend.Services
         public Lane Get(string id) =>
             lanes.Find<Lane>(lane => lane.Id == id).FirstOrDefault();
 
-        public void Update(string id, Lane laneIn) =>
-            lanes.ReplaceOne(lane => lane.Id == id, laneIn);
+        public async Task<Lane> Update(string id, Lane laneIn) {
+            var filter = Builders<Lane>.Filter.Eq(lane => lane.Id, id);
+            var update = Builders<Lane>.Update
+                .Set("Title", laneIn.Title);
 
-        public void Remove(Lane laneIn) =>
-            lanes.DeleteOne(lane => lane.Id == laneIn.Id);
+            await lanes.FindOneAndUpdateAsync(filter, update);
+
+            return lanes.Find<Lane>(lane => lane.Id == id).FirstOrDefault();
+        }
 
         public void Remove(string id) =>
             lanes.DeleteOne(lane => lane.Id == id);
@@ -40,6 +44,17 @@ namespace TruelimeBackend.Services
         public async Task<Lane> AddCard(string id, Card cardIn) {
             var filter = Builders<Lane>.Filter.Eq(lane => lane.Id, id);
             var update = Builders<Lane>.Update.Push(lane => lane.Cards, cardIn);
+
+            await lanes.FindOneAndUpdateAsync(filter, update);
+
+            return lanes.Find<Lane>(lane => lane.Id == id).FirstOrDefault();
+        }
+
+        public async Task<Lane> UpdateCard(string id, Card cardIn) {
+            var index = Get(id).Cards.FindIndex(card => card.Id == cardIn.Id);
+
+            var filter = Builders<Lane>.Filter.Eq(lane => lane.Id, id);
+            var update = Builders<Lane>.Update.Set(lane => lane.Cards[index], cardIn);
 
             await lanes.FindOneAndUpdateAsync(filter, update);
 
