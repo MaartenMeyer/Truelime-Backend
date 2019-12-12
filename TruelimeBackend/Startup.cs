@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using TruelimeBackend.Helpers;
 using TruelimeBackend.Models;
 using TruelimeBackend.Services;
 
@@ -37,13 +38,17 @@ namespace TruelimeBackend {
             services.AddCors(options =>
             {
                 options.AddPolicy(AllowSpecificOrigins,
-                    builder => {
+                    builder =>
+                    {
                         builder.WithOrigins("http://localhost:4200",
                                 "https://truelime-retrospective.herokuapp.com")
                             .AllowAnyHeader()
-                            .AllowAnyMethod();
+                            .AllowAnyMethod()
+                            .AllowCredentials();
                     });
             });
+            services.AddSignalR();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -57,6 +62,10 @@ namespace TruelimeBackend {
             }
 
             app.UseCors(AllowSpecificOrigins);
+
+            app.UseSignalR(routes => {
+                routes.MapHub<BroadcastHub>("/api/notify");
+            });
 
             app.UseHttpsRedirection();
             app.UseMvc();

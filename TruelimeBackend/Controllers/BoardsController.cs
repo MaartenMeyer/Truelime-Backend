@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using TruelimeBackend.Helpers;
 using TruelimeBackend.Models;
 using TruelimeBackend.Services;
 
@@ -15,12 +17,14 @@ namespace TruelimeBackend.Controllers
         private readonly BoardService boardService;
         private readonly LaneService laneService;
         private readonly CardService cardService;
+        private readonly IHubContext<BroadcastHub, IHubClient> hubContext;
 
-        public BoardsController(BoardService boardService, LaneService laneService, CardService cardService)
+        public BoardsController(BoardService boardService, LaneService laneService, CardService cardService, IHubContext<BroadcastHub, IHubClient> hubContext)
         {
             this.boardService = boardService;
             this.laneService = laneService;
             this.cardService = cardService;
+            this.hubContext = hubContext;
         }
 
         [HttpGet]
@@ -82,6 +86,8 @@ namespace TruelimeBackend.Controllers
             var lane = await laneService.Create(laneIn);
             await boardService.AddLane(board.Id, lane);
 
+            await hubContext.Clients.All.BroadcastMessage();
+
             return Ok("Lane added");
         }
 
@@ -116,6 +122,8 @@ namespace TruelimeBackend.Controllers
 
             laneService.Remove(lane.Id);
 
+            await hubContext.Clients.All.BroadcastMessage();
+
             return Ok();
         }
 
@@ -147,6 +155,8 @@ namespace TruelimeBackend.Controllers
             var updatedLane = await laneService.AddCard(lane.Id, card);
             // Update lane in board
             await boardService.UpdateLane(board.Id, updatedLane);
+
+            await hubContext.Clients.All.BroadcastMessage();
 
             return Ok("Card added");
         }
@@ -188,6 +198,8 @@ namespace TruelimeBackend.Controllers
             await boardService.UpdateLane(board.Id, updatedLane);
             // Remove the card from the database
             cardService.Remove(card);
+
+            await hubContext.Clients.All.BroadcastMessage();
 
             return Ok();
         }
