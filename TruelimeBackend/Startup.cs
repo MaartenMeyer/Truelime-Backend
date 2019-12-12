@@ -19,6 +19,8 @@ namespace TruelimeBackend {
             Configuration = configuration;
         }
 
+        readonly string AllowSpecificOrigins = "allowSpecificOrigins";
+
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -32,7 +34,16 @@ namespace TruelimeBackend {
             services.AddSingleton<LaneService>();
             services.AddSingleton<CardService>();
 
-            services.AddCors();
+            services.AddCors(options =>
+            {
+                options.AddPolicy(AllowSpecificOrigins,
+                    builder => {
+                        builder.WithOrigins("http://localhost:4200",
+                                "https://truelime-retrospective.herokuapp.com")
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                    });
+            });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -45,9 +56,7 @@ namespace TruelimeBackend {
                 app.UseHsts();
             }
 
-            app.UseCors(
-                options => options.AllowAnyOrigin()
-            );
+            app.UseCors(AllowSpecificOrigins);
 
             app.UseHttpsRedirection();
             app.UseMvc();
