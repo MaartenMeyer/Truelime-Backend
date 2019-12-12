@@ -46,11 +46,13 @@ namespace TruelimeBackend.Services
             return lanes.Find<Lane>(lane => lane.Id == id).FirstOrDefault();
         }
 
-        public async Task RemoveCard(string id, Card cardIn) {
+        public async Task<Lane> RemoveCard(string id, Card cardIn) {
             var filter = Builders<Lane>.Filter.Eq(card => card.Id, id);
             var update = Builders<Lane>.Update.PullFilter("Cards", Builders<Card>.Filter.Eq(card => card.Id, cardIn.Id));
 
             await lanes.FindOneAndUpdateAsync(filter, update);
+
+            return lanes.Find<Lane>(lane => lane.Id == id).FirstOrDefault();
         }
     }
 }
