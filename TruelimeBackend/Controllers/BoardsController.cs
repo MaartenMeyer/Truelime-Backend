@@ -93,6 +93,31 @@ namespace TruelimeBackend.Controllers
         }
 
         /// <summary>
+        /// Clears board of all existing cards
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <returns>Returns status 200 if succesful or 204 if id was not found</returns>
+        [HttpDelete("{boardId:length(24)}/cards", Name = "ClearBoard")]
+        public async Task<ActionResult<Board>> ClearBoard(string boardId) {
+            var board = boardService.Get(boardId);
+            if (board == null) {
+                return NoContent();
+            }
+            foreach(var lane in board.Lanes) {
+                foreach(var card in lane.Cards) {
+                    var updatedLane = await laneService.RemoveCard(lane.Id, card);
+                    await boardService.UpdateLane(board.Id, updatedLane);
+                    cardService.Remove(card.Id);
+                }
+                
+            }
+
+            await hubContext.Clients.All.BroadcastMessage();
+
+            return Ok("Board cleared");
+        }
+
+        /// <summary>
         /// Creates a new lane and adds it to the board with id of param boardId
         /// </summary>
         /// <param name="boardId"></param>
