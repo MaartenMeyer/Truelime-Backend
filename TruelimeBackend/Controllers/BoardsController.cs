@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using TruelimeBackend.Helpers;
@@ -9,6 +10,7 @@ using TruelimeBackend.Services;
 
 namespace TruelimeBackend.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class BoardsController : ControllerBase {
@@ -24,10 +26,12 @@ namespace TruelimeBackend.Controllers
             this.hubContext = hubContext;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<List<Board>> Get() =>
             boardService.Get();
 
+        [AllowAnonymous]
         [HttpGet("{id:length(24)}", Name = "GetBoard")]
         public ActionResult<Board> Get(string id) {
             var board = boardService.Get(id);
@@ -64,7 +68,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Board updated");
+            return Ok(new { message = "Board updated" });
         }
 
         /// <summary>
@@ -89,7 +93,32 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Board deleted");
+            return Ok(new { message = "Board deleted" });
+        }
+
+        /// <summary>
+        /// Clears board of all existing cards
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <returns>Returns status 200 if succesful or 204 if id was not found</returns>
+        [HttpDelete("{boardId:length(24)}/cards", Name = "ClearBoard")]
+        public async Task<ActionResult<Board>> ClearBoard(string boardId) {
+            var board = boardService.Get(boardId);
+            if (board == null) {
+                return NoContent();
+            }
+            foreach(var lane in board.Lanes) {
+                foreach(var card in lane.Cards) {
+                    var updatedLane = await laneService.RemoveCard(lane.Id, card);
+                    await boardService.UpdateLane(board.Id, updatedLane);
+                    cardService.Remove(card.Id);
+                }
+                
+            }
+
+            await hubContext.Clients.All.BroadcastMessage();
+
+            return Ok("Board cleared");
         }
 
         /// <summary>
@@ -113,7 +142,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Lane added");
+            return Ok(new { message = "Lane added" });
         }
 
         /// <summary>
@@ -145,7 +174,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Lane updated");
+            return Ok(new { message = "Lane updated" });
         }
 
         /// <summary>
@@ -180,7 +209,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Lane deleted");
+            return Ok(new { message = "Lane deleted" });
         }
 
         /// <summary>
@@ -213,7 +242,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Card added");
+            return Ok(new { message = "Card added" });
         }
 
         /// <summary>
@@ -252,7 +281,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Card updated");
+            return Ok(new { message = "Card updated" });
         }
 
         /// <summary>
@@ -295,7 +324,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Card deleted");
+            return Ok(new { message = "Delete card" });
         }
     }
 }
