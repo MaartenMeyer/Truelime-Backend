@@ -30,11 +30,15 @@ namespace TruelimeBackend.Services
         public Board Get(string id) =>
             boards.Find<Board>(board => board.Id == id).FirstOrDefault();
 
-        public void Update(string id, Board boardIn) =>
-            boards.ReplaceOne(board => boardIn.Id == id, boardIn);
+        public async Task<Board> Update(string id, Board boardIn) {
+            var filter = Builders<Board>.Filter.Eq(board => board.Id, id);
+            var update = Builders<Board>.Update
+                .Set("Title", boardIn.Title)
+                .Set("Description", boardIn.Description)
+                .Set("Owner", boardIn.Owner);
 
-        public void Remove(Board boardIn) =>
-            boards.DeleteOne(board => board.Id == boardIn.Id);
+            return await boards.FindOneAndUpdateAsync(filter, update);
+        }
 
         public void Remove(string id) =>
             boards.DeleteOne(board => board.Id == id);

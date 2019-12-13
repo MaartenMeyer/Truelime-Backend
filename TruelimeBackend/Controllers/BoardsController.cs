@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -12,15 +11,13 @@ namespace TruelimeBackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BoardsController : ControllerBase
-    {
+    public class BoardsController : ControllerBase {
         private readonly BoardService boardService;
         private readonly LaneService laneService;
         private readonly CardService cardService;
         private readonly IHubContext<BroadcastHub, IHubClient> hubContext;
 
-        public BoardsController(BoardService boardService, LaneService laneService, CardService cardService, IHubContext<BroadcastHub, IHubClient> hubContext)
-        {
+        public BoardsController(BoardService boardService, LaneService laneService, CardService cardService, IHubContext<BroadcastHub, IHubClient> hubContext) {
             this.boardService = boardService;
             this.laneService = laneService;
             this.cardService = cardService;
@@ -43,29 +40,56 @@ namespace TruelimeBackend.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Board> CreateBoard(Board board)
-        {
+        public ActionResult<Board> CreateBoard(Board board) {
             boardService.Create(board);
 
-            return CreatedAtRoute("GetBoard", new { id = board.Id.ToString() }, board);
+            return CreatedAtRoute("GetBoard", new { id = board.Id }, board);
         }
 
-        [HttpDelete("{boardId:length(24)}", Name = "DeleteBoard")]
-        public ActionResult DeleteBoard(string boardId) {
+        /// <summary>
+        /// Finds and updates a board
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <param name="boardIn"></param>
+        /// <returns>Returns status 200 if successful or 204 if and id was not found</returns>
+        [HttpPut("{boardId:length(24)}", Name = "UpdateBoard")]
+        public async Task<ActionResult<Board>> UpdateBoard(string boardId, Board boardIn) {
             var board = boardService.Get(boardId);
             if (board == null) {
                 return NoContent();
             }
-            foreach(Lane lane in board.Lanes) {
-                foreach (Card card in lane.Cards) {
-                    cardService.Remove(card);
+
+            // Update board
+            await boardService.Update(boardId, boardIn);
+
+            await hubContext.Clients.All.BroadcastMessage();
+
+            return Ok("Board updated");
+        }
+
+        /// <summary>
+        /// Find and delete a board and its lanes and cards
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <returns>Returns status 200 if successful or 204 if and id was not found</returns>
+        [HttpDelete("{boardId:length(24)}", Name = "DeleteBoard")]
+        public async Task<ActionResult> DeleteBoard(string boardId) {
+            var board = boardService.Get(boardId);
+            if (board == null) {
+                return NoContent();
+            }
+            foreach(var lane in board.Lanes) {
+                foreach (var card in lane.Cards) {
+                    cardService.Remove(card.Id);
                 }
-                laneService.Remove(lane);
+                laneService.Remove(lane.Id);
             }
 
             boardService.Remove(board.Id);
 
-            return Ok();
+            await hubContext.Clients.All.BroadcastMessage();
+
+            return Ok("Board deleted");
         }
 
         /// <summary>
@@ -73,17 +97,18 @@ namespace TruelimeBackend.Controllers
         /// </summary>
         /// <param name="boardId"></param>
         /// <param name="laneIn"></param>
-        /// <returns>Returns the board this lane was added to</returns>
+        /// <returns>Returns status 200 if successful or 204 if and id was not found</returns>
         [HttpPost("{boardId:length(24)}/lanes", Name = "PostLane")]
-        public async Task<ActionResult<Board>> CreateLane(string boardId, Lane laneIn)
-        {
+        public async Task<ActionResult<Board>> CreateLane(string boardId, Lane laneIn) {
             var board = boardService.Get(boardId);
             if (board == null)
             {
                 return NoContent();
             }
 
+            // Creates a new lane in the database
             var lane = await laneService.Create(laneIn);
+            // Adds the new lane to the board
             await boardService.AddLane(board.Id, lane);
 
             await hubContext.Clients.All.BroadcastMessage();
@@ -92,8 +117,39 @@ namespace TruelimeBackend.Controllers
         }
 
         /// <summary>
-        /// Find and deletes the lane with id of param laneId
-        /// Removes the lane from the board with id of param boardId
+        /// Finds and updates a lane
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <param name="laneId"></param>
+        /// <param name="laneIn"></param>
+        /// <returns>Returns status 200 if successful or 204 if and id was not found</returns>
+        [HttpPut("{boardId:length(24)}/lanes/{laneId:length(24)}", Name = "UpdateLane")]
+        public async Task<ActionResult<Board>> UpdateLane(string boardId, string laneId, Lane laneIn) {
+            var board = boardService.Get(boardId);
+            if (board == null) {
+                return NoContent();
+            }
+            var lane = laneService.Get(laneId);
+            if (lane == null) {
+                return NoContent();
+            }
+            // Check if lane is present in this board
+            if (board.Lanes.FindIndex(l => l.Id == lane.Id) < 0) {
+                return NoContent();
+            }
+
+            // Update lane in database and return lane
+            var updatedLane = await laneService.Update(lane.Id, laneIn);
+            // Update lane in board
+            await boardService.UpdateLane(board.Id, updatedLane);
+
+            await hubContext.Clients.All.BroadcastMessage();
+
+            return Ok("Lane updated");
+        }
+
+        /// <summary>
+        /// Find and deletes a lane and its cards
         /// </summary>
         /// <param name="boardId"></param>
         /// <param name="laneId"></param>
@@ -108,23 +164,23 @@ namespace TruelimeBackend.Controllers
             if (lane == null) {
                 return NoContent();
             }
-            var index = board.Lanes.FindIndex(l => l.Id == lane.Id);
-            if (index < 0)
+            if (board.Lanes.FindIndex(l => l.Id == lane.Id) < 0)
             {
                 return NoContent();
             }
-            foreach(Card card in lane.Cards)
+            foreach(var card in lane.Cards)
             {
-                cardService.Remove(card);
+                cardService.Remove(card.Id);
             }
 
+            // Removes the lane from the board
             await boardService.RemoveLane(board.Id, lane);
-
+            // Removes the lane from the database
             laneService.Remove(lane.Id);
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok();
+            return Ok("Lane deleted");
         }
 
         /// <summary>
@@ -133,7 +189,7 @@ namespace TruelimeBackend.Controllers
         /// <param name="boardId"></param>
         /// <param name="laneId"></param>
         /// <param name="cardIn"></param>
-        /// <returns>Returns the board this card was added to</returns>
+        /// <returns>Returns status 200 if successful or 204 if an id was not found</returns>
         [HttpPost("{boardId:length(24)}/lanes/{laneId:length(24)}/cards", Name = "PostCard")]
         public async Task<ActionResult<Board>> CreateCard(string boardId, string laneId, Card cardIn) {
             var board = boardService.Get(boardId);
@@ -144,8 +200,7 @@ namespace TruelimeBackend.Controllers
             if (lane == null) {
                 return NoContent();
             }
-            var index = board.Lanes.FindIndex(l => l.Id == lane.Id);
-            if (index < 0) {
+            if (board.Lanes.FindIndex(l => l.Id == lane.Id) < 0) {
                 return NoContent();
             }
 
@@ -159,6 +214,45 @@ namespace TruelimeBackend.Controllers
             await hubContext.Clients.All.BroadcastMessage();
 
             return Ok("Card added");
+        }
+
+        /// <summary>
+        /// Finds and updates a card
+        /// </summary>
+        /// <param name="boardId"></param>
+        /// <param name="laneId"></param>
+        /// <param name="cardId"></param>
+        /// <param name="cardIn"></param>
+        /// <returns>Returns status 200 if successful or 204 if an id was not found</returns>
+        [HttpPut("{boardId:length(24)}/lanes/{laneId:length(24)}/cards/{cardId:length(24)}", Name = "UpdateCard")]
+        public async Task<ActionResult<Board>> UpdateCard(string boardId, string laneId, string cardId, Card cardIn) {
+            var board = boardService.Get(boardId);
+            if (board == null) {
+                return NoContent();
+            }
+            var lane = laneService.Get(laneId);
+            if (lane == null) {
+                return NoContent();
+            }
+            var card = cardService.Get(cardId);
+            if (card == null) {
+                return NoContent();
+            }
+            // Check if lane is present in this board and if the card is present in this lane
+            if (board.Lanes.FindIndex(l => l.Id == lane.Id) < 0 || lane.Cards.FindIndex(c => c.Id == cardId) < 0) {
+                return NoContent();
+            }
+
+            // Update card in database and return card
+            var updatedCard = await cardService.Update(card.Id, cardIn);
+            // Update card in lane
+            var updatedLane = await laneService.UpdateCard(lane.Id, updatedCard);
+            // Update lane in board
+            await boardService.UpdateLane(board.Id, updatedLane);
+
+            await hubContext.Clients.All.BroadcastMessage();
+
+            return Ok("Card updated");
         }
 
         /// <summary>
@@ -197,11 +291,11 @@ namespace TruelimeBackend.Controllers
             // Update this lane on the board
             await boardService.UpdateLane(board.Id, updatedLane);
             // Remove the card from the database
-            cardService.Remove(card);
+            cardService.Remove(card.Id);
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok();
+            return Ok("Card deleted");
         }
     }
 }
