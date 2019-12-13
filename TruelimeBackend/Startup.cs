@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -10,9 +12,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using TruelimeBackend.Helpers;
 using TruelimeBackend.Models;
 using TruelimeBackend.Services;
+using AutoMapper;
 
 namespace TruelimeBackend {
     public class Startup {
@@ -31,9 +35,54 @@ namespace TruelimeBackend {
                 Configuration.GetSection(nameof(DatabaseSettings)));
             services.AddSingleton<DatabaseSettings.IDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
+            services.Configure<Settings>(Configuration.GetSection(nameof(Settings)));
             services.AddSingleton<BoardService>();
             services.AddSingleton<LaneService>();
             services.AddSingleton<CardService>();
+            services.AddSingleton<UserService>();
+
+            services.AddAutoMapper(typeof(AutoMapperProfile));
+
+            var settings = Configuration.GetSection(nameof(Settings)).Get<Settings>();
+            var key = Encoding.ASCII.GetBytes(settings.SecretKey);
+
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(auth =>
+                {
+                    auth.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            Console.WriteLine("OnAuthenticationFailed: " + context.Exception.Message);
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            var userService = context.HttpContext.RequestServices.GetRequiredService<UserService>();
+                            var userId = context.Principal.Identity.Name;
+                            var user = userService.GetById(userId);
+                            if (user == null)
+                            {
+                                context.Fail("Unauthorized");
+                            }
+
+                            return Task.CompletedTask;
+                        }
+                    };
+                    auth.RequireHttpsMetadata = false;
+                    auth.SaveToken = true;
+                    auth.TokenValidationParameters = new TokenValidationParameters {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key)
+                    };
+                });
+            services.AddScoped<IUserService, UserService>();
 
             services.AddCors(options =>
             {
@@ -57,11 +106,12 @@ namespace TruelimeBackend {
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             } else {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseCors(AllowSpecificOrigins);
+
+            app.UseAuthentication();
 
             app.UseSignalR(routes => {
                 routes.MapHub<BroadcastHub>("/api/notify");
