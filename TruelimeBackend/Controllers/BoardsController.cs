@@ -17,9 +17,9 @@ namespace TruelimeBackend.Controllers
         private readonly BoardService boardService;
         private readonly LaneService laneService;
         private readonly CardService cardService;
-        private readonly IHubContext<BroadcastHub, IHubClient> hubContext;
+        private readonly IHubContext<BroadcastHub> hubContext;
 
-        public BoardsController(BoardService boardService, LaneService laneService, CardService cardService, IHubContext<BroadcastHub, IHubClient> hubContext) {
+        public BoardsController(BoardService boardService, LaneService laneService, CardService cardService, IHubContext<BroadcastHub> hubContext) {
             this.boardService = boardService;
             this.laneService = laneService;
             this.cardService = cardService;
@@ -66,7 +66,7 @@ namespace TruelimeBackend.Controllers
             // Update board
             await boardService.Update(boardId, boardIn);
 
-            await hubContext.Clients.All.BroadcastMessage();
+            hubContext.Clients.All.SendAsync("BroadcastMessage");
 
             return Ok(new { message = "Board updated" });
         }
@@ -91,7 +91,7 @@ namespace TruelimeBackend.Controllers
 
             boardService.Remove(board.Id);
 
-            await hubContext.Clients.All.BroadcastMessage();
+            hubContext.Clients.All.SendAsync("BroadcastMessage");
 
             return Ok(new { message = "Board deleted" });
         }
@@ -116,7 +116,7 @@ namespace TruelimeBackend.Controllers
                 
             }
 
-            await hubContext.Clients.All.BroadcastMessage();
+            hubContext.Clients.All.SendAsync("BroadcastMessage");
 
             return Ok("Board cleared");
         }
@@ -140,7 +140,7 @@ namespace TruelimeBackend.Controllers
             // Adds the new lane to the board
             await boardService.AddLane(board.Id, lane);
 
-            await hubContext.Clients.All.BroadcastMessage();
+            hubContext.Clients.All.SendAsync("BroadcastMessage");
 
             return Ok(new { message = "Lane added" });
         }
@@ -172,7 +172,7 @@ namespace TruelimeBackend.Controllers
             // Update lane in board
             await boardService.UpdateLane(board.Id, updatedLane);
 
-            await hubContext.Clients.All.BroadcastMessage();
+            hubContext.Clients.All.SendAsync("BroadcastMessage");
 
             return Ok(new { message = "Lane updated" });
         }
@@ -207,7 +207,7 @@ namespace TruelimeBackend.Controllers
             // Removes the lane from the database
             laneService.Remove(lane.Id);
 
-            await hubContext.Clients.All.BroadcastMessage();
+            hubContext.Clients.All.SendAsync("BroadcastMessage");
 
             return Ok(new { message = "Lane deleted" });
         }
@@ -240,7 +240,7 @@ namespace TruelimeBackend.Controllers
             // Update lane in board
             await boardService.UpdateLane(board.Id, updatedLane);
 
-            await hubContext.Clients.All.BroadcastMessage();
+            hubContext.Clients.All.SendAsync("BroadcastMessage");
 
             return Ok(new { message = "Card added" });
         }
@@ -279,7 +279,7 @@ namespace TruelimeBackend.Controllers
             // Update lane in board
             await boardService.UpdateLane(board.Id, updatedLane);
 
-            await hubContext.Clients.All.BroadcastMessage();
+            hubContext.Clients.All.SendAsync("BroadcastMessage");
 
             return Ok(new { message = "Card updated" });
         }
@@ -322,7 +322,7 @@ namespace TruelimeBackend.Controllers
             // Remove the card from the database
             cardService.Remove(card.Id);
 
-            await hubContext.Clients.All.BroadcastMessage();
+            hubContext.Clients.All.SendAsync("BroadcastMessage");
 
             return Ok(new { message = "Delete card" });
         }

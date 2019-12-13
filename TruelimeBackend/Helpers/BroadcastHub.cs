@@ -2,7 +2,7 @@
 
 namespace TruelimeBackend.Helpers
 {
-    public class BroadcastHub : Hub<IHubClient>
+    public class BroadcastHub : Hub
     {
         
     }
