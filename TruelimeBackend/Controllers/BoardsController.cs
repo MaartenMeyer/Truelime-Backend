@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using TruelimeBackend.Helpers;
@@ -9,6 +10,7 @@ using TruelimeBackend.Services;
 
 namespace TruelimeBackend.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class BoardsController : ControllerBase {
@@ -24,10 +26,12 @@ namespace TruelimeBackend.Controllers
             this.hubContext = hubContext;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult<List<Board>> Get() =>
             boardService.Get();
 
+        [AllowAnonymous]
         [HttpGet("{id:length(24)}", Name = "GetBoard")]
         public ActionResult<Board> Get(string id) {
             var board = boardService.Get(id);
@@ -64,7 +68,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Board updated");
+            return Ok(new { message = "Board updated" });
         }
 
         /// <summary>
@@ -89,7 +93,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Board deleted");
+            return Ok(new { message = "Board deleted" });
         }
 
         /// <summary>
@@ -113,7 +117,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Lane added");
+            return Ok(new { message = "Lane added" });
         }
 
         /// <summary>
@@ -145,7 +149,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Lane updated");
+            return Ok(new { message = "Lane updated" });
         }
 
         /// <summary>
@@ -180,7 +184,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Lane deleted");
+            return Ok(new { message = "Lane deleted" });
         }
 
         /// <summary>
@@ -213,7 +217,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Card added");
+            return Ok(new { message = "Card added" });
         }
 
         /// <summary>
@@ -252,7 +256,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Card updated");
+            return Ok(new { message = "Card updated" });
         }
 
         /// <summary>
@@ -295,7 +299,7 @@ namespace TruelimeBackend.Controllers
 
             await hubContext.Clients.All.BroadcastMessage();
 
-            return Ok("Card deleted");
+            return Ok(new { message = "Delete card" });
         }
     }
 }
