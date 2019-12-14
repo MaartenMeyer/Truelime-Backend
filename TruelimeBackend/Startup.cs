@@ -13,6 +13,7 @@ using TruelimeBackend.Helpers;
 using TruelimeBackend.Models;
 using TruelimeBackend.Services;
 using AutoMapper;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Http;
 
 namespace TruelimeBackend {
@@ -93,9 +94,12 @@ namespace TruelimeBackend {
                             .AllowCredentials();
                     });
             });
-            services.ConfigureApplicationCookie(options =>
+            services.Configure<CookiePolicyOptions>(options =>
             {
-                options.Cookie.SameSite = SameSiteMode.None;
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+                options.HttpOnly = HttpOnlyPolicy.Always;
+                options.Secure = CookieSecurePolicy.Always;
             });
             services.AddSignalR();
 
