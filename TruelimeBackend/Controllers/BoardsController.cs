@@ -44,8 +44,20 @@ namespace TruelimeBackend.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Board> CreateBoard(Board board) {
+        public async Task<ActionResult<Board>> CreateBoard(Board board)
+        {
+            //var auth = Request.Headers["Authorization"];
+            Lane[] lanes = {
+                new Lane{Title = "Wat ging goed?"},
+                new Lane{Title = "Wat kon beter?"},
+                new Lane{Title = "Te ondernemen acties"}
+            };
             boardService.Create(board);
+            foreach (var lane in lanes)
+            {
+                var createdLane = await laneService.Create(lane);
+                await boardService.AddLane(board.Id, createdLane);
+            }
 
             return CreatedAtRoute("GetBoard", new { id = board.Id }, board);
         }
