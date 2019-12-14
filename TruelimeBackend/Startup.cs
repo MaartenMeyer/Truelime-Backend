@@ -1,22 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using TruelimeBackend.Helpers;
 using TruelimeBackend.Models;
 using TruelimeBackend.Services;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 
 namespace TruelimeBackend {
     public class Startup {
@@ -95,6 +92,10 @@ namespace TruelimeBackend {
                             .AllowAnyMethod()
                             .AllowCredentials();
                     });
+            });
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None;
             });
             services.AddSignalR();
 
