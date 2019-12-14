@@ -114,6 +114,7 @@ namespace TruelimeBackend {
                 app.UseHsts();
             }
 
+            app.UseCookiePolicy();
             app.UseCors(AllowSpecificOrigins);
 
             app.UseAuthentication();
