@@ -17,5 +17,7 @@ namespace TruelimeBackend.Models
 
         [BsonElement("Author")]
         public string Author { get; set; }
+
+        public int Rating { get; set; }
     }
 }

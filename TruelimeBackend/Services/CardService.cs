@@ -32,7 +32,8 @@ namespace TruelimeBackend.Services
             var filter = Builders<Card>.Filter.Eq(card => card.Id, id);
             var update = Builders<Card>.Update
                 .Set("Title", cardIn.Title)
-                .Set("Message", cardIn.Message);
+                .Set("Message", cardIn.Message)
+                .Set("Rating", cardIn.Rating);
 
             await cards.FindOneAndUpdateAsync(filter, update);
 
