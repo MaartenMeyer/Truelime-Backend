@@ -31,7 +31,8 @@ namespace TruelimeBackend.Services
         public async Task<Lane> Update(string id, Lane laneIn) {
             var filter = Builders<Lane>.Filter.Eq(lane => lane.Id, id);
             var update = Builders<Lane>.Update
-                .Set("Title", laneIn.Title);
+                .Set("Title", laneIn.Title)
+                .Set("Cards", laneIn.Cards);
 
             await lanes.FindOneAndUpdateAsync(filter, update);
 
