@@ -19,5 +19,7 @@ namespace TruelimeBackend.Models
         public string Author { get; set; }
 
         public int Rating { get; set; }
+
+        public string Color { get; set; }
     }
 }
