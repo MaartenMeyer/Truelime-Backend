@@ -40,7 +40,6 @@ namespace TruelimeBackend.Services
             var update = Builders<Board>.Update
                 .Set("Title", boardIn.Title)
                 .Set("Description", boardIn.Description)
-                .Set("Owner", boardIn.Owner)
                 .Set("Colors", boardIn.Colors);
 
             return await boards.FindOneAndUpdateAsync(filter, update);
