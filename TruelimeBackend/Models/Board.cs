@@ -17,7 +17,7 @@ namespace TruelimeBackend.Models
         public string Description { get; set; }
 
         [BsonElement("Owner")]
-        public string Owner { get; set; }
+        public BoardUser Owner { get; set; }
 
         public List<string> Colors { get; set; }
 

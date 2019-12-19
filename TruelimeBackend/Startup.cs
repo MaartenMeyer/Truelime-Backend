@@ -39,6 +39,8 @@ namespace TruelimeBackend {
             services.AddSingleton<CardService>();
             services.AddSingleton<UserService>();
 
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             services.AddAutoMapper(typeof(AutoMapperProfile));
 
             var settings = Configuration.GetSection(nameof(Settings)).Get<Settings>();

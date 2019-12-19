@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using TruelimeBackend.Helpers;
@@ -17,24 +19,32 @@ namespace TruelimeBackend.Controllers
         private readonly BoardService boardService;
         private readonly LaneService laneService;
         private readonly CardService cardService;
+        private readonly UserService userService;
         private readonly IHubContext<BroadcastHub> hubContext;
+        private readonly IHttpContextAccessor httpContextAccessor;
 
-        public BoardsController(BoardService boardService, LaneService laneService, CardService cardService, IHubContext<BroadcastHub> hubContext) {
+        public BoardsController(BoardService boardService, LaneService laneService, CardService cardService, UserService userService, IHubContext<BroadcastHub> hubContext, IHttpContextAccessor httpContextAccessor) {
             this.boardService = boardService;
             this.laneService = laneService;
             this.cardService = cardService;
+            this.userService = userService;
             this.hubContext = hubContext;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
         [AllowAnonymous]
         [HttpGet]
-        public ActionResult<List<Board>> Get() =>
-            boardService.Get();
+        public ActionResult<List<Board>> Get()
+        {
+            var userId = httpContextAccessor.HttpContext.User.Identity.Name;
+
+            return boardService.Get(userId);
+        }
 
         [AllowAnonymous]
         [HttpGet("{id:length(24)}", Name = "GetBoard")]
         public ActionResult<Board> Get(string id) {
-            var board = boardService.Get(id);
+            var board = boardService.GetById(id);
             if (board == null)
             {
                 return NoContent();
@@ -46,12 +56,15 @@ namespace TruelimeBackend.Controllers
         [HttpPost]
         public async Task<ActionResult<Board>> CreateBoard(Board board)
         {
-            //var auth = Request.Headers["Authorization"];
+            var userId = httpContextAccessor.HttpContext.User.Identity.Name;
+            var user = userService.GetById(userId);
+
             Lane[] lanes = {
                 new Lane{Title = "Wat ging goed?"},
                 new Lane{Title = "Wat kon beter?"},
                 new Lane{Title = "Te ondernemen acties"}
             };
+            board.Owner = new BoardUser(user.Id, user.Username);
             boardService.Create(board);
             foreach (var lane in lanes)
             {
@@ -70,7 +83,7 @@ namespace TruelimeBackend.Controllers
         /// <returns>Returns status 200 if successful or 204 if and id was not found</returns>
         [HttpPut("{boardId:length(24)}", Name = "UpdateBoard")]
         public async Task<ActionResult<Board>> UpdateBoard(string boardId, Board boardIn) {
-            var board = boardService.Get(boardId);
+            var board = boardService.GetById(boardId);
             if (board == null) {
                 return NoContent();
             }
@@ -90,7 +103,7 @@ namespace TruelimeBackend.Controllers
         /// <returns>Returns status 200 if successful or 204 if and id was not found</returns>
         [HttpDelete("{boardId:length(24)}", Name = "DeleteBoard")]
         public async Task<ActionResult> DeleteBoard(string boardId) {
-            var board = boardService.Get(boardId);
+            var board = boardService.GetById(boardId);
             if (board == null) {
                 return NoContent();
             }
@@ -115,7 +128,7 @@ namespace TruelimeBackend.Controllers
         /// <returns>Returns status 200 if succesful or 204 if id was not found</returns>
         [HttpDelete("{boardId:length(24)}/cards", Name = "ClearBoard")]
         public async Task<ActionResult<Board>> ClearBoard(string boardId) {
-            var board = boardService.Get(boardId);
+            var board = boardService.GetById(boardId);
             if (board == null) {
                 return NoContent();
             }
@@ -141,7 +154,7 @@ namespace TruelimeBackend.Controllers
         /// <returns>Returns status 200 if successful or 204 if and id was not found</returns>
         [HttpPost("{boardId:length(24)}/lanes", Name = "PostLane")]
         public async Task<ActionResult<Board>> CreateLane(string boardId, Lane laneIn) {
-            var board = boardService.Get(boardId);
+            var board = boardService.GetById(boardId);
             if (board == null)
             {
                 return NoContent();
@@ -166,7 +179,7 @@ namespace TruelimeBackend.Controllers
         /// <returns>Returns status 200 if successful or 204 if and id was not found</returns>
         [HttpPut("{boardId:length(24)}/lanes/{laneId:length(24)}", Name = "UpdateLane")]
         public async Task<ActionResult<Board>> UpdateLane(string boardId, string laneId, Lane laneIn) {
-            var board = boardService.Get(boardId);
+            var board = boardService.GetById(boardId);
             if (board == null) {
                 return NoContent();
             }
@@ -197,7 +210,7 @@ namespace TruelimeBackend.Controllers
         /// <returns>Returns 200 if deleted or 204 if an id was not found</returns>
         [HttpDelete("{boardId:length(24)}/lanes/{laneId:length(24)}", Name = "DeleteLane")]
         public async Task<ActionResult> DeleteLane(string boardId, string laneId) {
-            var board = boardService.Get(boardId);
+            var board = boardService.GetById(boardId);
             if (board == null) {
                 return NoContent();
             }
@@ -233,7 +246,7 @@ namespace TruelimeBackend.Controllers
         /// <returns>Returns status 200 if successful or 204 if an id was not found</returns>
         [HttpPost("{boardId:length(24)}/lanes/{laneId:length(24)}/cards", Name = "PostCard")]
         public async Task<ActionResult<Board>> CreateCard(string boardId, string laneId, Card cardIn) {
-            var board = boardService.Get(boardId);
+            var board = boardService.GetById(boardId);
             if (board == null) {
                 return NoContent();
             }
@@ -267,7 +280,7 @@ namespace TruelimeBackend.Controllers
         /// <returns>Returns status 200 if successful or 204 if an id was not found</returns>
         [HttpPut("{boardId:length(24)}/lanes/{laneId:length(24)}/cards/{cardId:length(24)}", Name = "UpdateCard")]
         public async Task<ActionResult<Board>> UpdateCard(string boardId, string laneId, string cardId, Card cardIn) {
-            var board = boardService.Get(boardId);
+            var board = boardService.GetById(boardId);
             if (board == null) {
                 return NoContent();
             }
@@ -306,7 +319,7 @@ namespace TruelimeBackend.Controllers
         /// <returns>Returns 200 if deleted or 204 if an id was not found</returns>
         [HttpDelete("{boardId:length(24)}/lanes/{laneId:length(24)}/cards/{cardId:length(24)}", Name = "DeleteCard")]
         public async Task<ActionResult> DeleteCard(string boardId, string laneId, string cardId) {
-            var board = boardService.Get(boardId);
+            var board = boardService.GetById(boardId);
             if (board == null) {
                 return NoContent();
             }
