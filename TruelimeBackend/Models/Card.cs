@@ -15,6 +15,9 @@ namespace TruelimeBackend.Models
         [BsonElement("Message")]
         public string Message { get; set; }
 
+        [BsonElement("Type")]
+        public string Type { get; set; }
+
         [BsonElement("Author")]
         public string Author { get; set; }
 
