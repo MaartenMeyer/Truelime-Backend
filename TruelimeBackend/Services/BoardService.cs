@@ -25,10 +25,14 @@ namespace TruelimeBackend.Services
             return board;
         }
 
-        public List<Board> Get() =>
-            boards.Find(board => true).ToList();
+        public List<Board> Get(string userId)
+        {
+            var boardFilter = Builders<Board>.Filter.Eq(board => board.Owner.Id, userId);
 
-        public Board Get(string id) =>
+            return boards.Find(boardFilter).ToList();
+        }
+
+        public Board GetById(string id) =>
             boards.Find<Board>(board => board.Id == id).FirstOrDefault();
 
         public async Task<Board> Update(string id, Board boardIn) {
@@ -55,7 +59,7 @@ namespace TruelimeBackend.Services
 
         public async Task UpdateLane(string id, Lane laneIn)
         {
-            var index = Get(id).Lanes.FindIndex(lane => lane.Id == laneIn.Id);
+            var index = GetById(id).Lanes.FindIndex(lane => lane.Id == laneIn.Id);
 
             var filter = Builders<Board>.Filter.Eq(board => board.Id, id);
             var update = Builders<Board>.Update.Set(board => board.Lanes[index], laneIn);
