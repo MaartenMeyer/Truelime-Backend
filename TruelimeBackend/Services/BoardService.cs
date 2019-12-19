@@ -19,6 +19,7 @@ namespace TruelimeBackend.Services
 
         public Board Create(Board board)
         {
+            board.Colors = board.Colors;
             board.Lanes = new List<Lane>();
             boards.InsertOne(board);
             return board;
@@ -35,7 +36,8 @@ namespace TruelimeBackend.Services
             var update = Builders<Board>.Update
                 .Set("Title", boardIn.Title)
                 .Set("Description", boardIn.Description)
-                .Set("Owner", boardIn.Owner);
+                .Set("Owner", boardIn.Owner)
+                .Set("Colors", boardIn.Colors);
 
             return await boards.FindOneAndUpdateAsync(filter, update);
         }

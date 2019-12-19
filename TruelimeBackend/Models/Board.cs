@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -19,6 +18,8 @@ namespace TruelimeBackend.Models
 
         [BsonElement("Owner")]
         public string Owner { get; set; }
+
+        public List<string> Colors { get; set; }
 
         public List<Lane> Lanes { get; set; }
     }
