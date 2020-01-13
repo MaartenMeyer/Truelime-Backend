@@ -177,6 +177,7 @@ namespace TruelimeBackend.Controllers
         /// <param name="laneId"></param>
         /// <param name="laneIn"></param>
         /// <returns>Returns status 200 if successful or 204 if and id was not found</returns>
+        [AllowAnonymous]
         [HttpPut("{boardId:length(24)}/lanes/{laneId:length(24)}", Name = "UpdateLane")]
         public async Task<ActionResult<Board>> UpdateLane(string boardId, string laneId, Lane laneIn) {
             var board = boardService.GetById(boardId);
@@ -244,6 +245,7 @@ namespace TruelimeBackend.Controllers
         /// <param name="laneId"></param>
         /// <param name="cardIn"></param>
         /// <returns>Returns status 200 if successful or 204 if an id was not found</returns>
+        [AllowAnonymous]
         [HttpPost("{boardId:length(24)}/lanes/{laneId:length(24)}/cards", Name = "PostCard")]
         public async Task<ActionResult<Board>> CreateCard(string boardId, string laneId, Card cardIn) {
             var board = boardService.GetById(boardId);
@@ -278,6 +280,7 @@ namespace TruelimeBackend.Controllers
         /// <param name="cardId"></param>
         /// <param name="cardIn"></param>
         /// <returns>Returns status 200 if successful or 204 if an id was not found</returns>
+        [AllowAnonymous]
         [HttpPut("{boardId:length(24)}/lanes/{laneId:length(24)}/cards/{cardId:length(24)}", Name = "UpdateCard")]
         public async Task<ActionResult<Board>> UpdateCard(string boardId, string laneId, string cardId, Card cardIn) {
             var board = boardService.GetById(boardId);
